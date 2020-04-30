@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -21,10 +21,13 @@ distancer = Distancer(gameState.data.layout)
 distancer.getDistance( (1,1), (10,10) )
 """
 
-import sys, time, random
+import sys
+import time
+import random
+
 
 class Distancer:
-  def __init__(self, layout, default = 10000):
+  def __init__(self, layout, default=10000):
     """
     Initialize with Distancer(layout).  Changing default is unnecessary.
     """
@@ -64,12 +67,15 @@ class Distancer:
   def isReadyForMazeDistance(self):
     return self._distances != None
 
-def manhattanDistance(x, y ):
-  return abs( x[0] - y[0] ) + abs( x[1] - y[1] )
+
+def manhattanDistance(x, y):
+  return abs(x[0] - y[0]) + abs(x[1] - y[1])
+
 
 def isInt(pos):
   x, y = pos
   return x == int(x) and y == int(y)
+
 
 def getGrids2D(pos):
   grids = []
@@ -77,6 +83,7 @@ def getGrids2D(pos):
     for y, yDistance in getGrids1D(pos[1]):
       grids.append(((x, y), xDistance + yDistance))
   return grids
+
 
 def getGrids1D(x):
   intX = int(x)
@@ -88,10 +95,12 @@ def getGrids1D(x):
 # MACHINERY FOR COMPUTING MAZE DISTANCES #
 ##########################################
 
+
 distanceMap = {}
 
+
 class DistanceCalculator:
-  def __init__(self, layout, distancer, default = 10000):
+  def __init__(self, layout, distancer, default=10000):
     self.layout = layout
     self.distancer = distancer
     self.default = default
@@ -107,6 +116,7 @@ class DistanceCalculator:
 
     self.distancer._distances = distances
 
+
 def computeDistances(layout):
     "Runs UCS to all other positions from each position"
     distances = {}
@@ -115,7 +125,7 @@ def computeDistances(layout):
         dist = {}
         closed = {}
         for node in allNodes:
-            dist[node] = sys.maxint
+            dist[node] = sys.maxsize
         import util
         queue = util.PriorityQueue()
         queue.push(source, 0)
@@ -128,14 +138,14 @@ def computeDistances(layout):
             nodeDist = dist[node]
             adjacent = []
             x, y = node
-            if not layout.isWall((x,y+1)):
-                adjacent.append((x,y+1))
-            if not layout.isWall((x,y-1)):
-                adjacent.append((x,y-1) )
-            if not layout.isWall((x+1,y)):
-                adjacent.append((x+1,y) )
-            if not layout.isWall((x-1,y)):
-                adjacent.append((x-1,y))
+            if not layout.isWall((x, y+1)):
+                adjacent.append((x, y+1))
+            if not layout.isWall((x, y-1)):
+                adjacent.append((x, y-1))
+            if not layout.isWall((x+1, y)):
+                adjacent.append((x+1, y))
+            if not layout.isWall((x-1, y)):
+                adjacent.append((x-1, y))
             for other in adjacent:
                 if not other in dist:
                     continue
@@ -154,4 +164,3 @@ def getDistanceOnGrid(distances, pos1, pos2):
     if key in distances:
       return distances[key]
     return 100000
-
