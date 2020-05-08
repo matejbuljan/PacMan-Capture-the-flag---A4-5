@@ -27,6 +27,8 @@ from game import Directions
 import game
 from util import nearestPoint
 
+from dangerMap import DangerMap
+
 #################
 # Team creation #
 #################
@@ -57,10 +59,28 @@ class ReflexCaptureAgent(CaptureAgent):
   """
   A base class for reflex agents that chooses score-maximizing actions
   """
+
+  def __init__(self, index, timeForComputing=.1):
+    # Agent index for querying state
+    self.index = index
+    # Whether or not you're on the red team
+    self.red = None
+    # Agent objects controlling you and your teammates
+    self.agentsOnTeam = None
+    # Maze distance calculator
+    self.distancer = None
+    # A history of observations
+    self.observationHistory = []
+    # Time to spend each turn on computing maze distances
+    self.timeForComputing = timeForComputing
+    # Access to the graphics
+    self.display = None
  
   def registerInitialState(self, gameState):
     self.start = gameState.getAgentPosition(self.index)
     CaptureAgent.registerInitialState(self, gameState)
+    self.dangerMap = DangerMap(gameState.data.layout.walls, self.getMazeDistance)
+    print(self.dangerMap.getDangerMap())
 
   def chooseAction(self, gameState):
     """
@@ -185,3 +205,5 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
 
   def getWeights(self, gameState, action):
     return {'numInvaders': -1000, 'onDefense': 100, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
+
+
