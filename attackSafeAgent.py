@@ -37,13 +37,13 @@ class AttackSafeAgent(CaptureAgent):
     self.dangerMap = DangerMap(
         gameState.data.layout.walls, self.getMazeDistance)
     self.opponentsIndexes = self.getOpponents(gameState)
-    print(self.opponentsIndexes)
 
   def chooseAction(self, gameState):
     """
     Picks among the actions with the highest Q(s,a).
     """
     actions = gameState.getLegalActions(self.index)
+    actions.remove('Stop')
 
     # You can profile your evaluation time by uncommenting these lines
     # start = time.time()
@@ -87,7 +87,14 @@ class AttackSafeAgent(CaptureAgent):
     """
     features = self.getFeatures(gameState, action)
     weights = self.getWeights(gameState, action)
-    return features * weights
+    state_reward = features * weights
+    numCarrying = gameState.getAgentState(self.index).numCarrying
+    if self.red:
+      riskOfCarrying = 0.1 * numCarrying**2 * (gameState.getAgentPosition(self.index)[0] - 14)**2
+    else:
+      riskOfCarrying = 0.1 * numCarrying**2 * (17 - gameState.getAgentPosition(self.index)[0])**2
+    print(riskOfCarrying)
+    return state_reward - riskOfCarrying
 
   def getFeatures(self, gameState, action):
     
@@ -116,6 +123,7 @@ class AttackSafeAgent(CaptureAgent):
 
     distances = gameState.getAgentDistances()
     min_dist = 100
+    scared = False
     for ennemy_index in self.opponentsIndexes:
         ennemy_pos = gameState.getAgentPosition(ennemy_index)
         if ennemy_pos != None:
@@ -124,23 +132,25 @@ class AttackSafeAgent(CaptureAgent):
             dist = distances[ennemy_index]
         if dist < min_dist:
             min_dist = dist
+        if gameState.getAgentState(ennemy_index).scaredTimer > 0:
+          scared = True
         
-    if min_dist > 5 or myPos[0] <= 15:
+    if min_dist > 5 or myPos[0] <= 15 or scared:
         features['ennemyProximity'] = 0
     elif min_dist == 5:
-        features['ennemyProximity'] = 1
-    elif min_dist == 4:
-        features['ennemyProximity'] = 3
-    elif min_dist == 3:
-        features['ennemyProximity'] = 5
-    elif min_dist == 2:
         features['ennemyProximity'] = 10
-    elif min_dist == 1:
+    elif min_dist == 4:
+        features['ennemyProximity'] = 30
+    elif min_dist == 3:
+        features['ennemyProximity'] = 50
+    elif min_dist == 2:
         features['ennemyProximity'] = 100
+    elif min_dist == 1:
+        features['ennemyProximity'] = 1000
     elif min_dist == 0:
         features['ennemyProximity'] = 1000000
 
     return features
 
   def getWeights(self, gameState, action):
-    return {'successorScore': 100, 'distanceToFood': -1, 'danger': -10, 'ennemyProximity': -1}
+    return {'successorScore': 10, 'distanceToFood': -1, 'danger': -3, 'ennemyProximity': -0.5}
