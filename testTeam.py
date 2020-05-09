@@ -28,13 +28,14 @@ import game
 from util import nearestPoint
 
 from dangerMap import DangerMap
+from attackSafeAgent import AttackSafeAgent
 
 #################
 # Team creation #
 #################
 
 def createTeam(firstIndex, secondIndex, isRed,
-               first = 'OffensiveReflexAgent', second = 'DefensiveReflexAgent'):
+               first = 'AttackSafeAgent', second = 'DefensiveReflexAgent'):
   """
   This function should return a list of two agents that will form the
   team, initialized using firstIndex and secondIndex as their agent
@@ -54,6 +55,7 @@ def createTeam(firstIndex, secondIndex, isRed,
 ##########
 # Agents #
 ##########
+
 
 class ReflexCaptureAgent(CaptureAgent):
   """
@@ -79,14 +81,14 @@ class ReflexCaptureAgent(CaptureAgent):
   def registerInitialState(self, gameState):
     self.start = gameState.getAgentPosition(self.index)
     CaptureAgent.registerInitialState(self, gameState)
-    self.dangerMap = DangerMap(gameState.data.layout.walls, self.getMazeDistance)
-    print(self.dangerMap.getDangerMap())
 
   def chooseAction(self, gameState):
     """
     Picks among the actions with the highest Q(s,a).
     """
     actions = gameState.getLegalActions(self.index)
+    actions.remove('Stop')
+    print(actions)
 
     # You can profile your evaluation time by uncommenting these lines
     # start = time.time()
@@ -95,6 +97,7 @@ class ReflexCaptureAgent(CaptureAgent):
 
     maxValue = max(values)
     bestActions = [a for a, v in zip(actions, values) if v == maxValue]
+    print(bestActions)
 
     foodLeft = len(self.getFood(gameState).asList())
 

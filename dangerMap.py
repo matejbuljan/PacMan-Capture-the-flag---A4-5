@@ -35,10 +35,10 @@ class DangerMap:
             limit_positions = self.returnLimitsCoordinates(x,y)
             min_danger_on_close_positions = 500
             for coord in close_positions:
-              max_possible_danger = 0
               danger = self.dangerMap[coord[0]][coord[1]]
               if coord[1] >= 16:
                   danger = 0
+              max_possible_danger = 0
               for ennemy_coord in limit_positions:
                 diff = self.getMazeDistance((x, y), coord) - self.getMazeDistance(ennemy_coord, coord)
                 if diff >= 0:
@@ -58,6 +58,9 @@ class DangerMap:
   
   def getDangerMap(self):
     return self.dangerMap
+  
+  def getDanger(self, coords):
+    return self.dangerMap[int(coords[0])][int(coords[1])]
   
   def returnCorrectNeighbours(self, x_pos, y_pos):
     res = []
