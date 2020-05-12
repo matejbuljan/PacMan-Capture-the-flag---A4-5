@@ -15,9 +15,13 @@ class AttackSafeAgent(CaptureAgent):
   An attack class that takes into account the danger map to always survive when against only one defender
   """
 
+  distances = [10,10,10,10]
+  index = 0
+
   def __init__(self, index, timeForComputing=.1):
     # Agent index for querying state
     self.index = index
+    AttackSafeAgent.index = index
     # Whether or not you're on the red team
     self.red = None
     # Agent objects controlling you and your teammates
@@ -37,6 +41,7 @@ class AttackSafeAgent(CaptureAgent):
     self.dangerMap = DangerMap(
         gameState.data.layout.walls, self.getMazeDistance)
     self.opponentsIndexes = self.getOpponents(gameState)
+    print(self.dangerMap.getDangerMap())
 
   def chooseAction(self, gameState):
     """
@@ -66,7 +71,6 @@ class AttackSafeAgent(CaptureAgent):
           bestDist = dist
       return bestAction
 
-    print(values)
     return random.choice(bestActions)
 
   def getSuccessor(self, gameState, action):
@@ -85,6 +89,7 @@ class AttackSafeAgent(CaptureAgent):
     """
     Computes a linear combination of features and feature weights
     """
+    AttackSafeAgent.distances = gameState.getAgentDistances()
     features = self.getFeatures(gameState, action)
     weights = self.getWeights(gameState, action)
     state_reward = features * weights
@@ -93,7 +98,6 @@ class AttackSafeAgent(CaptureAgent):
       riskOfCarrying = 0.1 * numCarrying**2 * (gameState.getAgentPosition(self.index)[0] - 14)**2
     else:
       riskOfCarrying = 0.1 * numCarrying**2 * (17 - gameState.getAgentPosition(self.index)[0])**2
-    print(riskOfCarrying)
     return state_reward - riskOfCarrying
 
   def getFeatures(self, gameState, action):
