@@ -34,12 +34,15 @@ class AttackSafeAgent(CaptureAgent):
     self.timeForComputing = timeForComputing
     # Access to the graphics
     self.display = None
+    # Dimensions of the map
+    self.xDim = 16
+    self.yDim = 16
 
   def registerInitialState(self, gameState):
     self.start = gameState.getAgentPosition(self.index)
     CaptureAgent.registerInitialState(self, gameState)
     self.dangerMap = DangerMap(
-        gameState.data.layout.walls, self.getMazeDistance)
+        gameState.data.layout.walls, self.getMazeDistance, self.xDim, self.yDim)
     self.opponentsIndexes = self.getOpponents(gameState)
     print(self.dangerMap.getDangerMap())
 
@@ -95,9 +98,9 @@ class AttackSafeAgent(CaptureAgent):
     state_reward = features * weights
     numCarrying = gameState.getAgentState(self.index).numCarrying
     if self.red:
-      riskOfCarrying = 0.1 * numCarrying**2 * (gameState.getAgentPosition(self.index)[0] - 14)**2
+      riskOfCarrying = 0.1 * numCarrying**2 * (gameState.getAgentPosition(self.index)[0] - self.xDim + 2)**2
     else:
-      riskOfCarrying = 0.1 * numCarrying**2 * (17 - gameState.getAgentPosition(self.index)[0])**2
+      riskOfCarrying = 0.1 * numCarrying**2 * (self.xDim + 1 - gameState.getAgentPosition(self.index)[0])**2
     return state_reward - riskOfCarrying
 
   def getFeatures(self, gameState, action):
@@ -118,7 +121,7 @@ class AttackSafeAgent(CaptureAgent):
     
     # Compute danger at agent position
 
-    if (myPos[0] <= 15 and gameState.isOnRedTeam(self.index)) or (myPos[0] >= 16 and not gameState.isOnRedTeam(self.index)):
+    if (myPos[0] <= self.xDim - 1 and gameState.isOnRedTeam(self.index)) or (myPos[0] >= self.xDim and not gameState.isOnRedTeam(self.index)):
         features['danger'] = 0
     else:
         features['danger'] = self.dangerMap.getDanger(myPos)
@@ -139,7 +142,7 @@ class AttackSafeAgent(CaptureAgent):
         if gameState.getAgentState(ennemy_index).scaredTimer > 0:
           scared = True
         
-    if min_dist > 5 or myPos[0] <= 15 or scared:
+    if min_dist > 5 or myPos[0] <= self.xDim - 1 or scared:
         features['ennemyProximity'] = 0
     elif min_dist == 5:
         features['ennemyProximity'] = 10

@@ -34,12 +34,15 @@ class DefenseAgent(CaptureAgent):
     self.display = None
     # The measured distances of each agent from
     self.distances = None
+    # Dimensions of the map
+    self.xDim = 16
+    self.yDim = 16
 
   def registerInitialState(self, gameState):
     self.start = gameState.getAgentPosition(self.index)
     CaptureAgent.registerInitialState(self, gameState)
     self.dangerMap = DangerMap(
-        gameState.data.layout.walls, self.getMazeDistance)
+        gameState.data.layout.walls, self.getMazeDistance, self.xDim, self.yDim)
     self.opponentsIndexes = self.getOpponents(gameState)
     self.teamIndexes = self.getTeam(gameState)
 
@@ -60,7 +63,7 @@ class DefenseAgent(CaptureAgent):
           new_state = self.getSuccessor(gameState, action)
           new_dist = self.getMazeDistance(new_state.getAgentPosition(self.index),ennemy_pos)
           if new_dist < current_dist:
-            if (self.red and new_state.getAgentPosition(self.index)[0] <= 14) or (not self.red and new_state.getAgentPosition(self.index)[0] >= 17):
+            if (self.red and new_state.getAgentPosition(self.index)[0] < self.xDim - 1) or (not self.red and new_state.getAgentPosition(self.index)[0] > self.xDim):
               return action
     
     positions = self.bestPositions(gameState)
@@ -72,7 +75,7 @@ class DefenseAgent(CaptureAgent):
           new_state = self.getSuccessor(gameState, action)
           new_dist = self.getMazeDistance(new_state.getAgentPosition(self.index), chosen_position)
           if new_dist < current_dist:
-              if (self.red and new_state.getAgentPosition(self.index)[0] <= 14) or (not self.red and new_state.getAgentPosition(self.index)[0] >= 17):
+              if (self.red and new_state.getAgentPosition(self.index)[0] < self.xDim - 1) or (not self.red and new_state.getAgentPosition(self.index)[0] > self.xDim):
                   return action
     
 
@@ -216,10 +219,10 @@ class DefenseAgent(CaptureAgent):
       y_plus = y_pos + r - abs(x_pos)
       y_minus = y_pos + abs(x_pos) - r
       if 0 < x_pos + x and x_pos + x < 32:
-        if y_plus < 15 and 0 < y_plus and type(dangerMapMatrix[int(x_pos + x)][int(y_plus)]) == int:
+        if y_plus < self.xDim - 1 and 0 < y_plus and type(dangerMapMatrix[int(x_pos + x)][int(y_plus)]) == int:
           res.append((x_pos + x, y_plus))
-        if 0 < y_minus and y_minus < 15 and type(dangerMapMatrix[int(x_pos + x)][int(y_minus)]) == int:
+        if 0 < y_minus and y_minus < self.xDim - 1 and type(dangerMapMatrix[int(x_pos + x)][int(y_minus)]) == int:
           res.append((x_pos + x, y_minus))
-    if x_pos + r > 0 and x_pos + r < 31 and type(dangerMapMatrix[int(x_pos + r)][int(y_pos)]) == int:
+    if x_pos + r > 0 and x_pos + r < 2*self.xDim - 1 and type(dangerMapMatrix[int(x_pos + r)][int(y_pos)]) == int:
       res.append((x_pos + r, y_pos))
     return res
