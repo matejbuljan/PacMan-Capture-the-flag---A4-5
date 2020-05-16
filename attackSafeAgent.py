@@ -9,6 +9,7 @@ import game
 from util import nearestPoint
 
 from dangerMap import DangerMap
+from miniMax import MiniMax, Node
 
 class AttackSafeAgent(CaptureAgent):
   """
@@ -44,12 +45,49 @@ class AttackSafeAgent(CaptureAgent):
     self.dangerMap = DangerMap(
         gameState.data.layout.walls, self.getMazeDistance, self.xDim, self.yDim)
     self.opponentsIndexes = self.getOpponents(gameState)
-    print(self.dangerMap.getDangerMap())
+    #print(self.dangerMap.getDangerMap())
 
   def chooseAction(self, gameState):
     """
-    Picks among the actions with the highest Q(s,a).
+    Picks among the actions with the highest Q(s,a) if no ennemy is in radar range.
+    Otherwise, use minimax to decide which action to make.
     """
+    # Minimax depth must be odd
+    minimax_depth = 9
+    if True:#(self.red and myPos[0] >= self.xDim) or ((not self.red ) and myPos[0]<self.xDim):
+      for ennemy_index in self.opponentsIndexes:
+          ennemy_pos = gameState.getAgentPosition(ennemy_index)
+          if ennemy_pos != None:
+            minimax = MiniMax(gameState, None, minimax_depth)
+            for layer in range(int((minimax_depth - 1)/2)):
+              number_of_successors = 0
+              for k in range(len(minimax.tree[layer])):
+                node = minimax.tree[layer][k]
+                actions = node.gameState.getLegalActions(self.index)
+                for action in actions:
+                  successor = node.gameState.generateSuccessor(self.index, action)
+                  minimax.tree[layer + 1].append(Node(successor, 0, k, action, node.depth - 1))
+                  minimax.tree[layer][k].child.append(number_of_successors)
+                  number_of_successors += 1
+              number_of_successors = 0
+              for k in range(len(minimax.tree[layer + 1])):
+                node = minimax.tree[layer + 1][k]
+                actions = node.gameState.getLegalActions(ennemy_index)
+                for action in actions:
+                  successor = node.gameState.generateSuccessor(
+                      ennemy_index, action)
+                  minimax.tree[layer +
+                              2].append(Node(successor, 0, k, action, node.depth - 1))
+                  minimax.tree[layer + 1][k].child.append(number_of_successors)
+                  number_of_successors += 1
+            for terminalNode in minimax.tree[len(minimax.tree) - 1]:
+              actions = terminalNode.gameState.getLegalActions(self.index)
+              values = []
+              for action in actions:
+                values.append(self.evaluate(terminalNode.gameState, action))
+              terminalNode.value = max(values)
+            return minimax.ChooseBestAction()
+
     actions = gameState.getLegalActions(self.index)
     actions.remove('Stop')
 
@@ -101,10 +139,21 @@ class AttackSafeAgent(CaptureAgent):
       riskOfCarrying = 0.1 * numCarrying**2 * (gameState.getAgentPosition(self.index)[0] - self.xDim + 2)**2
     else:
       riskOfCarrying = 0.1 * numCarrying**2 * (self.xDim + 1 - gameState.getAgentPosition(self.index)[0])**2
-    return state_reward - riskOfCarrying
+
+    successor = self.getSuccessor(gameState, action)
+    futurePos = successor.getAgentState(self.index).getPosition()
+    myPos = gameState.getAgentPosition(self.index)
+    deposit_reward = 0
+    if self.red:
+      if myPos[0] == self.xDim and futurePos[0] == self.xDim - 1:
+        deposit_reward += numCarrying*100
+    else:
+      if myPos[0] == self.xDim - 1 and futurePos[0] == self.xDim:
+        deposit_reward += numCarrying*100
+
+    return state_reward - riskOfCarrying + deposit_reward
 
   def getFeatures(self, gameState, action):
-    
     
     features = util.Counter()
     successor = self.getSuccessor(gameState, action)
