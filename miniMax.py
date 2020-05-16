@@ -26,9 +26,14 @@ class MiniMax:
         for _ in range(total_maxmin, 0, -1):
             self.MinPart(2*total_maxmin - 1)
             self.MaxPart(2*total_maxmin - 2)
-        for node in self.tree[1]:
-            if node.value == self.tree[0][0].value:
-                return node.parentAction
+        best_value = -100000
+        best_index = -1
+        for k in range(len(self.tree[1])):
+            node = self.tree[1][k]
+            if node.value > best_value:
+                best_value = node.value
+                best_index = k
+        return self.tree[1][best_index].parentAction
         
 
     def MaxPart(self, depth):

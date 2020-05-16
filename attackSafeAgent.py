@@ -74,10 +74,8 @@ class AttackSafeAgent(CaptureAgent):
                 node = minimax.tree[layer + 1][k]
                 actions = node.gameState.getLegalActions(ennemy_index)
                 for action in actions:
-                  successor = node.gameState.generateSuccessor(
-                      ennemy_index, action)
-                  minimax.tree[layer +
-                              2].append(Node(successor, 0, k, action, node.depth - 1))
+                  successor = node.gameState.generateSuccessor(ennemy_index, action)
+                  minimax.tree[layer + 2].append(Node(successor, 0, k, action, node.depth - 1))
                   minimax.tree[layer + 1][k].child.append(number_of_successors)
                   number_of_successors += 1
             for terminalNode in minimax.tree[len(minimax.tree) - 1]:
@@ -200,9 +198,9 @@ class AttackSafeAgent(CaptureAgent):
     elif min_dist == 3:
         features['ennemyProximity'] = 50
     elif min_dist == 2:
-        features['ennemyProximity'] = 100
-    elif min_dist == 1:
         features['ennemyProximity'] = 1000
+    elif min_dist == 1:
+        features['ennemyProximity'] = 10000
     elif min_dist == 0:
         features['ennemyProximity'] = 1000000
 
