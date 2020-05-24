@@ -12,9 +12,10 @@ from copy import copy, deepcopy
 
 class DangerMap1:
 
-    def __init__(self, mapMatrix, xDim, yDim):
+    def __init__(self, mapMatrix, getMazeDistance, xDim, yDim):
         self.initialDangerMap = mapMatrix
         self.dangerMap = mapMatrix
+        self.getMazeDistance = getMazeDistance
         self.xDim = 2 * xDim
         self.yDim = yDim
         self.filledColumns = [False for x in range(xDim - 2)]
@@ -53,9 +54,31 @@ class DangerMap1:
     def getDanger(self, coords):
         return self.dangerMap[int(coords[0])][int(coords[1])]
 
-    def updateDangerMap(self, enemyCoords):
+    def resetDangerMap(self):
         self.dangerMap = self.initialDangerMap
-        #update dangerMap for cells around enemy
+
+    def addEnemy(self, enemyCoords):
+        self.dangerMap = self.initialDangerMap
+        for i in range(-5,6):
+            for j in range(-5,6):
+                ii = enemyCoords[0] + i
+                jj = enemyCoords[1] + j
+                if (ii >= 0) and (jj >= 0) and (ii < self.xDim / 2) and (jj < self.yDim) and (self.initialDangerMap[ii][jj] > -1):
+                    dist = self.getMazeDistance((ii, jj), enemyCoords)
+                    if dist < 6:
+                        dist = 6 - dist
+                        self.dangerMap[ii][jj] += 2*dist
+
+    def addCapsule(self, capsuleCoords):
+        for i in range(-2,3):
+            for j in range(-2,3):
+                ii = capsuleCoords[0] + i
+                jj = capsuleCoords[1] + j
+                if (ii >= 0) and (jj >= 0) and (ii < self.xDim / 2) and (jj < self.yDim) and (self.initialDangerMap[ii][jj] > -1):
+                    dist = self.getMazeDistance((ii, jj), capsuleCoords)
+                    if dist < 3:
+                        self.dangerMap[ii][jj] = 0
+
 
     def returnNeighborsValues(self, i, j):
         vals = []

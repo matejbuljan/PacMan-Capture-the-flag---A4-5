@@ -46,7 +46,7 @@ class AttackSafeAgent(CaptureAgent):
     self.xDim = int(gameState.data.layout.walls.width/2)
     self.yDim = int(gameState.data.layout.walls.height)
     #self.dangerMap = DangerMap(gameState.data.layout.walls, self.getMazeDistance, self.xDim, self.yDim)
-    self.dangerMap = DangerMap1(gameState.data.layout.walls, self.xDim, self.yDim)
+    self.dangerMap = DangerMap1(gameState.data.layout.walls, self.getMazeDistance, self.xDim, self.yDim)
     self.opponentsIndexes = self.getOpponents(gameState)
     self.initialFoodLeft = len(self.getFood(gameState).asList())
     self.k = 0
